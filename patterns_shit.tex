@@ -1,0 +1,1506 @@
+\documentclass[a3paper,11pt]{report}
+\author{Behemoth}
+\usepackage[margin=35pt]{geometry}
+\usepackage{layout}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref} 
+\usepackage{graphicx}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{hyperref}
+\usepackage[school, simplified]{pgf-umlcd}
+\usetikzlibrary{arrows.meta}
+\usepackage{enumitem}
+\usepackage{xkeyval}
+\title{Fucking Patterns}
+\frenchspacing
+
+%content_config
+\hypersetup{
+    colorlinks,
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black
+}
+
+%list config
+\setitemize{noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt}
+
+
+%uml config
+\def \ssboxSize {3cm}
+\def \boxSize {7cm}
+\def \sboxSize {5cm}
+\def \bboxSize {11cm}
+\tikzstyle{umlcdNS}=[umlcd style,-{Latex[length=3mm, width=2mm]}, color=\umldrawcolor]
+
+\renewcommand{\umlfillcolor}{white}
+\renewcommand{\umltextcolor}{black}
+\renewcommand{\umldrawcolor}{black}
+
+\renewcommand{\unidirectionalAssociation}[4]{
+	\draw [umlcd style, ->, umlcdNS] (#1) -- (#4)
+	node[near end, above]{#2}
+	node[near end, below]{#3};
+}
+
+\newcommand{\umlnoteN}[1][]{
+	\node[umlcd style, anchor=north, draw, shape=umlcdnote, text width=7cm, #1]
+}
+
+\newcommand{\umlnoteF}[1][]{
+	\node[umlcd style, anchor=north, draw, shape=umlcdnote, text width=5cm, #1]
+}
+
+\newcommand{\unidirAssociation}[5] {
+    \draw [umlcdNS] (#1) -- ++(#5) -- ($(#4) + (#5)$) -- (#4) {};
+}
+
+\newcommand{\umlnoteND}[6]{
+	\node[umlcd style, anchor=north, draw, shape=umlcdnote, text width=#2] at (#1) (note) {#3};
+	\draw [umlcd style dashed line , ] (note.#4) ++(#5) --++(#6) coordinate(tmp) node[circle,inner sep=0pt,draw, fill=black!1, minimum size=5pt] (NoD) { };
+}
+
+
+
+\newcommand\tab[1][1cm]{\hspace*{#1}}
+
+\begin{document}
+\tableofcontents
+\usetikzlibrary{calc}
+
+\newpage
+\chapter{Design Patterns}
+\newpage
+\section{Creational patterns}
+\subsection{Abstract Factory}
+	\large\textbf{Abstract Factory} --- паттерн, порождающий объекты\\
+	\large\textbf{Назначение}: предоставляет интерфейс для создания семейств взаимосвязанных или взаимозависимых объектов, не специфицируя их конкретных классов.
+\\
+
+\begin{tikzpicture}%[ show background grid ]
+	\begin{class}[text width=\sboxSize]{Client} {10, -1}
+	\end{class}
+	\begin{interface}[]{AbstractFactory}{-7, 0}
+		\operation{+ creteateProductA()}
+		\operation{+ creteateProductB()}
+	\end{interface}
+	\begin{interface}[]{AbstractProductA}{3.5, -5}
+	\end{interface}
+	\begin{interface}[]{AbstractProductB}{6, -11}
+	\end{interface}
+	\begin{class}[]{ConcreteFactoryB} {-10, -5}
+		\implement{AbstractFactory}
+		\operation{+ creteateProductA()}
+		\operation{+ creteateProductB()}
+	\end{class}
+	\begin{class}[]{ConcreteFactoryA} {-3, -5}
+		\implement{AbstractFactory}
+		\operation{+ creteateProductA()}
+		\operation{+ creteateProductB()}
+	\end{class}
+	\begin{class}[]{ProductA 1} {0, -8}
+		\implement{AbstractProductA}
+		\attribute{}
+	\end{class}
+	\begin{class}[]{ProductA 2} {6, -8}
+		\implement{AbstractProductA}
+		\attribute{}
+	\end{class}
+	\begin{class}[]{ProductB 1} {3, -15}
+		\implement{AbstractProductB}
+		\attribute{}
+	\end{class}
+	\begin{class}[]{ProductB 2} {9, -15}
+		\implement{AbstractProductB}
+		\attribute{}
+	\end{class}
+	\unidirectionalAssociation{Client}{}{}{AbstractFactory}
+	\draw [umlcd style , ->] (Client.south) ++(-1, 0) |- (AbstractProductA.east) ;
+	\draw [umlcd style , ->] (Client.south) ++(1, 0) |- (AbstractProductB) ;
+	\draw [umlcd style dashed line , ->] (ConcreteFactoryB.south) ++ (-1, 0) -- ++(0, -10.5) -- ++(10, 0)  -| (ProductB 2.south) ;
+	\draw [umlcd style dashed line , ->] (ConcreteFactoryB.south) ++ (1, 0) -- ++(0, -3.5) -- ++(5, 0)  -| (ProductA 2.south) ;
+	\draw [umlcd style dashed line , ->] (ConcreteFactoryA.south) ++ (-1, 0) -- ++(0, -1.5) -- ++(1, 0)  -- (ProductA 1.west) ;
+	\draw [umlcd style dashed line , ->] (ConcreteFactoryA.south) ++ (-2, 0) -- ++(0, -10) -- ++(5, 0)  -| (ProductB 1.south) ;
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item AbstractFactory --- объявляет интерфейс для операций, создающих абстрактные объекты-продукты;
+\item ConcreteFactory --- реализует операции, создающие конкретные объекты продукты;
+\item AbstractProduct --- объявляет интерфейс для типа объекта продукта;
+\item ConcreteProduct --- определяет объект продукт, создаваемый соответствующей конкретной фабрикой;
+\item Client --- пользуется исключительно интерфейсами, которые объявлены в классах AbstractFactory и AbstractProduct.
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item система не должна зависеть от того, как создаются, компилируются и предстваляются входящие в нее объекты;
+\item входящие в семейство взаимосвязные объекты должны использоваться вместе и вам необходимо обеспечить выполнение этого ограничения;
+\item система должна конфигурироваться одним из семейств составляющих ее объектов;
+\item вы хотите предоставить библиотеку объектов, раскрывая только их интерфейсы, но не реализацию.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Обычно во время выполнения создается единственный экземпляр класса ConcreteFactory. Эта конкретная фабрика создает объекты продукты, имеющие вполне определенную реализацию. Для создания других видов объектов клиент должен воспользоваться другой конкретной фабрикой;
+\item AbstractFactory передоверяет создание объектов продуктов своему под
+классу ConcreteFactory.
+\end{itemize}
+
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] изолирует конкретные классы
+\item [+] упрощает замену семейств продуктов
+\item [+] гарантирует сочетаемость продуктов
+\item [-] поддержать новый вид продуктов трудно
+\end{itemize}
+
+\newpage
+\subsection{Builder}
+
+\large\textbf{Builder} --- паттерн, порождающий объекты.
+\\
+\large\textbf{Назначение}: отделяет конструирование сложного объекта от его представления, так что в результате одного и того же процесса конструирования могут получаться разные представления.
+\\
+  
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{Director}{-10, -1}
+		\operation{+ construct()}
+	\end{class}
+	\begin{interface}[]{Builder}{0, 0}
+		\operation{+ buildPart(): Builder}
+	\end{interface}
+	\begin{class}[]{ConcreteBuilder}{0, -5}
+		\implement{Builder}
+		\operation{+ buildPart(): Builder}
+		\operation{+ getResult(): Product}
+	\end{class}
+	\begin{class}[]{Product}{10, -5}
+		\attribute{}
+		\operation{}
+	\end{class}
+	\aggregation {Director.east}{builder}{}{Builder.west}
+	\draw [umlcd style dashed line , ->] (ConcreteBuilder.east) -- (Product.west) ;
+	\umlnoteND {-10, -4}{\sboxSize}{ for all objects \{\\ \tab builder.buildPart();\\\}}{north}{1, 0}{0, 2};
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Builder --- задает абстрактный интерфейс для создания частей объекта Product;
+\item СoncreteBuilder ---
+\item Director --- конструирует объект, пользуясь интерфейсом Builder;
+\item Product --- представляет сложный конструируемый объект. ConcreteBuilder строит внутреннее представление продукта и определяет процесс его сборки;
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item алгоритм создания сложного объекта не должен зависеть от того, из каких частей состоит объект и как они стыкуются между собой;
+\item процесс конструирования должен обеспечивать различные представления конструируемого объекта.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item клиент создает объект распорядитель Director и конфигурирует его нужным объектом строителем Builder;
+\item распорядитель уведомляет строителя о том, что нужно построить очередную часть продукта;
+\item строитель обрабатывает запросы распорядителя и добавляет новые части к продукту;
+\item клиент забирает продукт у строителя.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] позволяет изменять внутреннее представление продукта;
+\item [+] изолирует код, реализующий конструирование и представление;
+\item [+] дает более тонкий контроль над процессом конструирования;
+\end{itemize}
+
+\newpage
+\subsection{Factory method}
+
+\large\textbf{Factory method} --- паттерн, порождающий классы..
+\\
+\large\textbf{Назначение}: Определяет интерфейс для создания объекта, но оставляет подклассам решение о том, какой класс инстанцировать. Factory method позволяет классу делегировать инстанцирование подклассам.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{interface}[]{Product}{-10, 0}
+	\end{interface}
+	\begin{abstractclass}[]{Creator}{0, 0}
+		\operation{+ factoryMethod()}
+		\operation{+ anOperation()}
+	\end{abstractclass}
+	
+	\begin{class}[]{ConcreteProduct}{-10, -5}
+		\implement{Product}
+	\end{class}
+	\begin{class}[]{ConcreteCreator}{0, -5}
+		\implement{Creator}
+		\operation{+ factoryMethod()}
+	\end{class}
+	\unidirectionalAssociation{ConcreteCreator}{}{}{ConcreteProduct}
+	\umlnoteND {7.5, -1.2}{\boxSize}{  ...\\  product = factoryMethod()\\...\\  }{west}{0, 0}{-2, 0};
+	\umlnoteND {7.5, -5.5}{\boxSize}{ return new ConcreteProduct() }{west}{0, 0}{-2, 0};
+
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Product --- определяет интерфейс объектов, создаваемых фабричным методом;
+\item ConcreteProduct --- реализует интерфейс Product;
+\item Creator --- 
+\item ConcreteCreator --- замещает фабричный метод, возвращающий объект СoncreteProduct.
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item классу заранее неизвестно, объекты каких классов ему нужно создавать;
+\item класс спроектирован так, чтобы объекты, которые он создает, специфицировались подклассами;
+\item класс делегирует свои обязаности одному из нескольких вспомагательных подклассов, и вы планиурете локализовать знание о том, какой класс принимает эти обязаности на себя.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Создатель «полагается» на свои подклассы в определении фабричного метода, который будет возвращать экземпляр подходящего конкретного продукта.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] предоставляет подклассам операции зацепки (hooks);
+\item [+] соединяет параллельные иерархии;
+\end{itemize}
+
+\newpage
+\subsection{Prototype}
+
+\large\textbf{Prototype} --- паттерн, порождающий объекты.
+\\
+\large\textbf{Назначение}: задает виды создаваемых объектов с помощью экземпляра прототипа и создает новые объекты путем копирования этого прототипа. 
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{Client}{-10, 0}
+		\operation{+ operation()}
+	\end{class}
+	\begin{interface}[]{Prototype}{3, 0}
+		\operation{+ clone()}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{ConcretePrototype 1}{-1, -5}
+		\implement{Prototype}
+		\operation{+ clone()}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ConcretePrototype 2}{7, -5}
+		\implement{Prototype}
+		\operation{+ clone()}
+	\end{class}
+	\unidirectionalAssociation{Client}{}{}{Prototype}
+	\umlnoteND {7, -8}{\boxSize}{  вернуть копию самого себя  }{north}{0, 0}{0, 2};
+	\umlnoteND {-1, -8}{\boxSize}{  вернуть копию самого себя  }{north}{0, 0}{0, 2};
+	\umlnoteND {-10, -3}{\sboxSize}{  p = prototype.clone()  }{north}{1, 0}{0, 2};
+	
+
+ 
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Prototype --- объявляет интерфейс для клонирования самого себя;
+\item ConcretePrototype --- реализует операцию клонирования себя;
+\item Client --- создает новый объект, обращаясь к прототипу с запросом клонировать себя.
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда система не должна зависеть от того, как в ней создаются, компонуются и представляются продукты:
+\begin{itemize}
+\item инстацируемые классы определяются во время выполнения, например с помощью динамической загрузки;
+\item для того чтобы избежать построения иерархий классов или фабрик, паралельных иерархий классов продуктов;
+\item экземпляры класса могут находиться в одном из не очень большого числа различных состояний. Может оказаться удобнее установить соответствующее число прототипов и клонировать их, а не инстанцировать каждый раз класс вручную в подходящем состоянии.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Клиент обращается к прототипу, чтобы тот создал свою копию.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] добавление и удаление продуктов во время выполнения
+\item [+] спецификация новых объектов путем изменения значений
+\item [+] специфицирование новых объектов путем изменения структуры
+\item [+] уменьшение числа подклассов
+\item [+] динамическое конфигурирование приложения классами
+\end{itemize}
+
+\newpage
+\subsection{Singleton}
+
+\large\textbf{Singleton} --- паттерн, порождающий объекты.
+\\
+\large\textbf{Назначение}: гарантирует, что у класса есть только один экземпляр, и предоставляет к нему
+глобальную точку доступа.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[] {Singleton} {-10, 0}
+		\operation{ static Instance() }
+		\operation{ singletonOperation()}
+		\operation{ getSingletonData()}
+		\attribute{ static uniqueInstance}
+		\attribute{ singletonData}
+	\end{class}
+	\umlnoteND {-2, -1.85}{\boxSize}{  return uniqueInstance  }{west}{0, 0}{-2, 0};
+
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Singleton --- определяет операцию Instance, которая позволяет клиентам получать доступ к единственному экземпляру.
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item должен быть ровно один экземпляр некоторого класса, легко доступный всем клиентам;
+\item единственный экземпляр должен расширяться путем порождения подклассов, и клиентам нужно иметь возможность работать с расширенными экземпляром без модификации своего кода.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Клиенты получают доступ к экземпляру класса Singleton только через его операцию Instance.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] контролируемый доступ к единственному экземпляру;
+\item [+] уменьшение числа имен;
+\item [+] допускает уточнение операций и представления;
+\item [+] допускает переменное число экземпляров;
+\item [+] большая гибкость, чем у операций класса.
+\end{itemize}
+
+\newpage
+\section{Structural patterns}
+\subsection{Adapter}
+
+\large\textbf{Adapter} --- паттерн, структурирующий классы и объекты.
+\\
+\large\textbf{Назначение}: преобразует интерфейс одного класса в интерфейс другого, который ожидают клиенты. Адаптер обеспечивает совместную работу классов с несовместимыми интерфейсами, которая без него была бы невозможна.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{Client}{-10, -0.5}
+	\end{class}
+	\begin{interface}[]{Target}{-3, 0}
+		\operation{ request()}
+	\end{interface}
+	\begin{class}[]{Adaptee}{5, 0}
+		\operation{ specificRequest()}
+	\end{class}
+	\begin{class}[]{Adapter}{0, -5}
+		\implement{Target}
+		\inherit{Adaptee}
+		\operation{ request()}
+	\end{class}
+	\unidirectionalAssociation{Client.east}{}{}{Target.west}
+	\umlnoteND {6.5, -5.65}{\sboxSize}{  specificRequest()  }{west}{0, 0}{-2, 0};	
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Target --- определяет зависящий от предметной области интерфейс, которым пользуется Client;
+\item Client --- вступает во взаимоотношения с объектами, удовлетворяющими интерфейсу Target;
+\item Adaptee --- определяет существующий интерфейс, который нуждается в адаптации;
+\item Adapter --- адаптирует интерфейс Adaptee к интерфейсу Target.
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item хотите использовать существующий класс, но его интерфейс не соответствует вашим потребностям;
+\item собираетесь создать повторно используемый класс, который должен взаимодействовать с заранее неизвестными или не связаными с ними классами, имеющими несовместимые интерфейсы;
+\item (только для адаптера объектова) нужно использовать несколько существующих подклассов, но непрактично адаптировать их интерфейсы путем порождения новых подклассов от каждого. В этом случае адаптер объектов может приспосабливать интерфейс их общего родительского класса.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Клиенты вызывают операции экземпляра адаптера Adapter. В свою очередь адаптер вызывает операции  адаптируемого объекта или класса Adaptee, который и выполняет запрос.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [] SHIIIT BOISHHHH
+\end{itemize}
+
+
+\newpage
+\subsection{Bridge}
+
+\large\textbf{Bridge} --- паттерн, структурирующий объекты.
+\\
+\large\textbf{Назначение}: Отделить абстракцию от ее реализации так, чтобы то и другое можно было изменять независимо.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{Client}{-10, 0}
+	\end{class}
+	\begin{abstractclass}[text width=\boxSize]{Abstraction}{-6, -3}
+		\operation[0]{+ operation()}
+		\attribute{- imp: Implementor}
+	\end{abstractclass}
+	\begin{class}[text width=\boxSize] {RefinedAbstraction} {-6, -8}
+		\inherit{Abstraction}
+	\end{class}
+	\begin{interface}[text width=\boxSize]{Implementor}{5, -3}
+		\operation{+ operationImpl()}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{ConcreteImplementorA}{1, -10}
+		\implement{Implementor}
+		\operation{+ operationImpl()}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ConcreteImplementorB}{9, -10}
+		\implement{Implementor}
+		\operation{+ operationImpl()}
+	\end{class}
+	\aggregation{Abstraction.east}{imp}{}{Implementor.west}
+	\umlnoteND {-2, -6.5}{\sboxSize}{  imp.operationImpl()  }{north}{-1, 0}{0, 1.3};	
+
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Abstraction --- 
+\item RefinedAbstraction --- 
+\item Implementor ---
+\item ConcreteImplementor ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item хотите избежать постоянной привязки абстракции к реализации. Так, например, бывает, когда реализацию необходимо выбрать во время выполнения программы;
+\item и абстракции, и реализации должны расширяться новыми подклассами. В таком случае паттерн \ позволяет комбинировать разные абстракции и реализации и изменять их независимо;
+\item изменения в реализации абстракиции не должны сказываться на клиентах, то есть клиентский код не должен перекомпилироваться;
+\item (только С++!) вы хотите полностью скрыть от клиентов реализацию абстракции. В С++ представление класса видимо через его интерфейс;
+\item число классов начинает быстро расти. Это признак того, что иерархию следует разделить на две части. Для таких иерархий классов Рамбо() использует термин «вложенные обобщения» ;
+\item вы хотите разделить одну реализацию между несколькими объектами(быть может, применяя подсчет ссылок), и этот факт необходимо скрыть от клиента.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Объект Abstraction перенаправляет своему объекту Implementor запросы клиента.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] отделение реализации от интерфейса;
+\item [+] повышение степени расширяемости;
+\item [+] сокрытие деталей реализации от клиентов.
+\end{itemize}
+
+\newpage
+\subsection{Composite}
+
+\large\textbf{Composite} --- паттерн, структурирующий объекты.
+\\
+\large\textbf{Назначение}: Компонует объекты в древовидные структуры для представления иерархий часть целое. Позволяет клиентам единообразно трактовать индивидуальные и составные объекты.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{Client}{-10, 0}
+	\end{class}
+	\begin{abstractclass}[text width=\boxSize]{Component}{0, 0}
+		\operation{+ operation()}
+		\operation{+ add(c: Component)}
+		\operation{+ remove(c: Component)}
+		\operation{+ getChild(i: int)}
+	\end{abstractclass}
+	\begin{class}[text width=\boxSize]{Leaf}{-5, -7}
+		\inherit{Component} 
+		\operation{+ operation()}
+	\end{class}
+	\begin{class}[text width=\boxSize]{Composite}{5, -7}
+		\inherit{Component}
+		\attribute{- components[ ]:Component}
+		\operation{+ operation()}
+		\operation{+ add(c: Component)}
+		\operation{+ remove(c: Component)}
+		\operation{+ getChild(i: int)}
+	\end{class}
+	\unidirectionalAssociation{Client.east}{}{}{Component.west}
+	\aggregation{Composite}{}{}{Component}
+	\umlnoteND {12, -8.4}{\sboxSize}{  for(c in components) \{\\ \tab c.operation()\\ \}  }{west}{0, 0.5}{-2, 0};	
+
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Component --- 
+\item Leaf --- 
+\item Composite ---
+\item Client --- манипулирует объектами композиции через интерфейс Component.
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item нужно представить иерархию объектов вида часть-целое;
+\item хотите, чтобы клиенты единообразно трактовали составные и индивидуальные объекты.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Клиенты используют интерфейс класса Component для взаимодействия с объектами в составной структуре. Если получателем запроса является листовый объект Leaf, то он и обрабатывает запрос. Когда же получателем является составной объект Composite, то обычно он перенаправляет запрос своим потомкам, возможно, выполняя некоторые дополнительные операции до или после перенаправления.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] определяет иерархии классов, состоящие из примитивных и составных объектов;
+\item [+] упрощает архитектуру клиента;
+\item [+] облегчает добавление новых видов компонентов;
+\item [-] способствует созданию общего дизайна.
+\end{itemize}
+\newpage
+\subsection{Decorator}
+
+\large\textbf{Decorator} --- паттерн, структурирующий объекты.
+\\
+\large\textbf{Назначение}: Динамически добавляет объекту новые обязанности. Является гибкой альтернативой порождению подклассов с целью расширения функциональности.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{interface}[]{Component}{-5, 0}
+		\operation{+ operation()}
+	\end{interface}
+	\begin{class}[]{ConcreteComponent}{-10, -5}
+		\implement{Component}
+		\operation{+ operation()}
+	\end{class}
+	\begin{abstractclass}[]{Decorator}{-2, -5}
+		\implement{Component}
+		\operation{+ operation()}
+	\end{abstractclass}
+	\begin{class}[] {ConcreteDecoratorA}{-5, -10}
+		\inherit{Decorator}
+		\operation{+ operation()}
+		\attribute{ addedState}
+	\end{class}
+	\begin{class}[] {ConcreteDecoratorB}{2, -10}
+		\inherit{Decorator}
+		\operation{+ operation()}
+		\operation{- addedBehavior()}		
+	\end{class}
+	\aggregation{Decorator}{}{}{Component}
+	\umlnoteND {5, -6}{\sboxSize}{  component.operation()  }{west}{0, 0}{-2, 0};	
+	\umlnoteND {9, -10.1}{\boxSize}{  override parent operation. \\ call super.operation()\\ call new behavior }{west}{0, 0}{-2, 0};	
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Component --- определяет интерфейс для объектов, на которые могут быть динамически возложены дополнительные обязанности;
+\item ConcreteComponent --- определяет объект, на который возлагаются дополнительные обязанности;
+\item Decorator --- хранит ссылку на объект Component и определяет интерфейс, соответствующий интерфейсу Component;
+\item ConcreteDecorator --- возлагает дополнительные обязанности на компонент.
+\end{itemize}
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item для динамического, прозрачного для клиентов добавления обязанностей объектам;
+\item для реализации обязаностей, которые могут быть сняты с объекта;
+\item когда расширение путем порождения подклассов по каким-то причинами неудобно или невозможно. Иногда приходится реализовывать много независимых расширений, так что порождение подклассов для поддержки всех возможных комбинаций приведет к комбинаторному росту их числа. В других случаях определение класса может быть скрыто или почему-либо еще недоступно, так что породить от него подкласс нельзя.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Decorator переадресует запросы объекту Component. Может выполнятьи дополнительные операции до и после переадресации.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] большая гибкость, нежели у статического наследования
+\item [+] позволяет избежать перегруженных функциями классов на верхних уровнях иерархии
+\item [~] декоратор и его компонент не идентичны
+\item [-] множество мелких объектов
+\end{itemize}
+\newpage
+\subsection{Facade}
+
+\large\textbf{Facade} --- паттерн, структурирующий объекты.
+\\
+\large\textbf{Назначение}: Предоставляет унифицированный интерфейс вместо набора интерфейсов некоторой подсистемы. Фасад определяет интерфейс более высокого уровня, который упрощает использование подсистемы.
+\\
+
+\large\textbf{\\Пример}:\\
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{Compiler}{-4, -3}
+		\operation{+ compile()}
+	\end{class}
+	\begin{package}{Subsystem classes}
+		\begin{class}{Stream}{-10, -5}
+		\end{class}
+		\begin{class}{BytecodeStream}{-10, -8}
+			\inherit{Stream}
+		\end{class}
+		\begin{class}{CodeGenerator}{-10, -10}
+		\end{class}
+		\begin{class}[text width=\boxSize]{StackMachineGenerator}{-10, -12}
+			\inherit{CodeGenerator}
+		\end{class}
+		\begin{class}[text width=\boxSize]{RISCCodeGenerator}{-2, -12}
+			\inherit{CodeGenerator}
+		\end{class}
+		\begin{class}{Scanner}{2, -5}
+		\end{class}
+		\begin{class}{Token}{9, -5}
+		\end{class}
+		\begin{class}{Parser}{2, -7}
+		\end{class}
+		\begin{class}{Symbol}{9, -7}
+		\end{class}
+		\begin{class}[text width=\boxSize]{ProgramNodeBuilder}{1, -9}
+		\end{class}
+		\begin{class}{ProgramNode}{9, -9}
+		\end{class}
+		\begin{class}{StatementNode}{5, -12}
+		\end{class}
+		\begin{class}{ExpressionNode}{7, -14}
+		\end{class}
+		\begin{class}{VariableNode}{9, -16}
+		\end{class}
+		
+		\draw [umlcd style dashed line , ->, ] (Compiler.south) ++(2, 0) --++(0, -1) -| (Scanner.west){};
+		\draw [umlcd style dashed line , ->, ] (Compiler.south) ++(-2, 0) --++(0, -6) -| (CodeGenerator.east){};
+		\draw [umlcd style dashed line , ->, ] (Compiler.south) ++(1, 0) --++(0, -3) -| (Parser.west){};
+		\draw [umlcd style dashed line , ->, ] (Compiler.south) ++(0, 0) --++(0, -5) -| (ProgramNodeBuilder.west){};
+		
+		\draw [umlcd style dashed line , ->, umlcdNS] (Scanner.east) -- (Token.west){};
+		\draw [umlcd style dashed line , ->, umlcdNS] (ProgramNodeBuilder.east) -- (ProgramNode.west){};
+		\unidirectionalAssociation{CodeGenerator}{}{}{BytecodeStream}
+		
+	\end{package}
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Facade ---
+\item Subsystem classes --- 
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item хотите предоставить простой интерфейс к сложной подсистеме. Часто подсистемы усложняются по мере развития. Применение большинства паттернов приводит к появлению меньших классов, но в большем количестве. Такую подсистему проще повторно использовать и настраивать под конкретные нужды, но вместе с тем применять подсистему настройки становится труднее. \ предлагает некоторый вид системы по умолчанию, устраивающий большинство клиентов. И лишь те объекты, которым нужны более широкие возможности настройки, могут обратиться напрямую к тому, что находится за фасадом;
+\item между клиентами и классами реализации абстракции существует много зависимостей. \ позволит отделить подсистему как от клиентов, так и от других подсистем, что, в свою очередь, способствует повышению степени независимости и переносимости;
+\item вы хотите разложить подсистему на отдельные слои. Используйте фасад для определения точки входа на каждый уровень подсистемы. Если подсистемы зависят друг от друга, то зависимость можно упростить, разрешив подсистемам обмениваться информацией только через фасады.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Клиенты общаются с подсистемой, посылая запросы фасаду. Он переадресует их подходящим объектам внутри подсистемы. Хотя основную работу выполняют именно объекты подсистемы, фасаду, возможно, придется преобразовать свой интерфейс в интерфейсы подсистемы.
+\item Клиенты, пользующиеся фасадом, не имеют прямого доступа к объектам под
+системы.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item[+] изолирует клиентов от компонентов подсистемы
+\item[+] позволяет ослабить связанность между подсистемой и ее клиентами
+\item[+] фасад не препятствует приложениям напрямую обращаться к классам подсистемы, если это необходимо
+\end{itemize}
+
+\newpage
+\subsection{Flyweight}
+
+\large\textbf{Flyweight} --- паттерн, структурирующий объекты.
+\\
+\large\textbf{Назначение}: Использует разделение для эффективной поддержки множества мелких объектов.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{FlyweightFactory}{-10, 0}
+		\operation{+ getFlyweight(key)}
+		\attribute{- flyweight: Map}
+	\end{class}
+	\begin{interface}[text width=\boxSize]{Flyweight}{5, 0}
+		\operation{+ operation(extrinctState)}
+	\end{interface}
+	\begin{class}[]{Client}{-10, -9}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ConcreteFlyweight}{4, -5}
+		\implement{Flyweight}
+		\operation{+ operation(extrinctState)}
+		\attribute{- instrictState}
+	\end{class}
+	\begin{class}[text width=\boxSize]{UnsharedFlyweight}{6, -10}
+		\implement{Flyweight}
+		\operation{+ operation(extrinctState)}
+		\attribute{- allState}
+	\end{class}
+	\aggregation{FlyweightFactory}{flyweights}{}{Flyweight}
+	\unidirectionalAssociation{Client}{}{}{FlyweightFactory}
+	\unidirectionalAssociation{Client}{}{}{ConcreteFlyweight}
+	\unidirectionalAssociation{Client}{}{}{UnsharedFlyweight} 
+	\umlnoteND {-5, -3}{\boxSize}{   if(flyweight[key])\{ \\ \tab return current flyweight \\ \} else \{ \\ \tab create new flyweight \\ \tab add it in pool\\ \tab return new flyweight\\ \}}{north}{-3, 0}{0, 1.2};
+
+
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Flyweight ---
+\item ConcreteFlyweight ---
+\item UnsharedConcreteFlyweight ---
+\item FlyweightFactory ---
+\item Client ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда все из ниже перечисленого присутствует:
+\begin{itemize}
+\item в приложении используется большое число объектов;
+\item из-за этого накладные расходы на хранение высоки;
+\item большую часть состояния объектов можно вынести вовне;
+\item многие группы объектов можно заменить относительно небольшим количеством разделяемых объектов, поскольку внешнее состояние вынесено;
+\item приложение не зависит от идентичности объекта. Поскольку объекты-приспособленцы могут разделяться, то проверка на идентичность возвратит «истину» для концептуально различных объектов.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item состояние, необходимое приспособленцу для нормальной работы, можно охарактеризовать как внутреннее или внешнее. Первое хранится в самом объекте ConcreteFlyweight. Внешнее состояние хранится или вычисляется клиентами. Клиент передает его приспособленцу при вызове операций;
+\item клиенты не должны создавать экземпляры класса ConcreteFlyweight напрямую, а могут получать их только от объекта FlyweightFactory. Это позволит гарантировать корректное разделение.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item []
+\item []
+\end{itemize}
+
+\newpage
+\subsection{Proxy}
+
+\large\textbf{Proxy} --- паттерн, структурирующий объекты.
+\\
+\large\textbf{Назначение}: является суррогатом другого объекта и контролирует доступ к нему.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[]{Client}{-10, 0}
+	\end{class}
+	\begin{interface}[]{Subject}{2, 0}
+		\operation{+ request()}
+	\end{interface}
+	\begin{class}[]{Proxy}{2, -5}
+		\implement{Subject}
+		\operation{+ request()}
+	\end{class}
+	\begin{class}[]{RealSubject}{-10, -5}
+		\implement{Subject}
+		\operation{+ request()}
+	\end{class}
+	\unidirectionalAssociation{Client}{}{}{Subject}
+	\unidirectionalAssociation{Proxy}{realSubject}{}{RealSubject}
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Proxy ---
+\item Subject ---
+\item RealSubject ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item \emph{виртуальный} proxy создает ’тяжелые’ объекты по требованию;
+\item \emph{защитный} proxy  контролирует доступ к исходному объекту. Такие заместители полезны, когда для разных объектов определены различные права доступа;
+\item \emph{удаленный} proxy  предоставляет локального представителя вместо объекта, находящегося в другому адресном пространстве(Джеймс Коплиен называет такой proxy «послом»);
+\item \emph{умный/интеллектуальный} proxy --- это замена обычного указателя. Она позволяет выполнить дополнительные действие при доступе к объекту.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Proxy при необходимости переадресует запросы объекту RealSubject. Детали зависят от вида заместителя
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [] SHIIIT BOIIISHHH
+\end{itemize}
+\newpage
+\section{Behavioral patterns}
+\subsection{Chain of responsibility}
+
+\large\textbf{Chain of responsibility} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Позволяет избежать привязки отправителя запроса к его получателю, давая шанс обработать запрос нескольким объектам. Связывает объекты получатели в цепочку и передает запрос вдоль этой цепочки, пока его не обработают.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{interface}[text width=\boxSize]{Handler}{-5, 0}
+		\operation{+ handleMessage()}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{ConcreteHandler}{-5, -5}
+		\implement{Handler}
+		\attribute{- handler: Handler}
+		\operation{+ handlerMessage()}
+		\operation{+ handlerMethod()}
+	\end{class}
+	\umlnoteND {4, -5}{\boxSize}{    if (can handle) \{ \\ \tab handlerMethod(); \\ \} else \{ \\ \tab   successor.handlerMessage(); \\ \}  }{west}{0, -0.2}{-2, 0};
+                      
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Handler ---
+\item ConcreteHandler ---
+\item Client ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item есть более одного объекта, способного обработать запрос, причем настоящий обработчик заранее неизвестен и должен быть найден автоматически;
+\item вы хотите отправить запрос одному из нескольких объектов, не указывая явно, какому именно;
+\item набор объектов, способных обработать запрос, должен задаваться динамически.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Когда клиент инициирует запрос, он продвигается по цепочке, пока некоторый объект ConcreteHandler не возьмет на себя ответственность за его обработку.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] ослабление связанности
+\item [+] дополнительная гибкость при распределении обязанностей между объектами
+\item [-] получение не гарантировано
+\end{itemize}
+
+\newpage 
+\subsection{Command}
+
+\large\textbf{Command} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Инкапсулирует запрос как объект, позволяя тем самым задавать параметры клиентов для обработки соответствующих запросов, ставить запросы в очередь или протоколировать их, а также поддерживать отмену операций.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{interface}[text width=\sboxSize]{Command}{10, 0}
+		\operation{+ execute()}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{ConcreteCommand}{10, -5}
+		\implement{Command}
+		\attribute{- state}
+		\operation{+ execute()}
+	\end{class}
+	\begin{class}[text width=\sboxSize]{Invoker}{2, 0}
+		\attribute{ }
+		\operation{ }
+	\end{class}
+	\begin{class}[text width=\sboxSize]{Receiver}{0, -5}
+		\attribute{ }
+		\operation{+ action()}
+	\end{class}
+	\begin{class}[text width=\sboxSize]{Client}{-5, 0}
+		\attribute{ }
+		\operation{ }
+	\end{class}
+	\aggregation{Invoker}{}{}{Command}
+	\unidirectionalAssociation{ConcreteCommand}{}{}{Receiver}
+	\unidirectionalAssociation{Client.south}{}{}{Receiver.west}
+	
+	\umlnoteND {10, -8.5}{\sboxSize}{ \tab receiver.action() }{north}{0, 0}{0, 2};
+                      
+
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Command
+\item ConcreteCommand
+\item Client
+\item Invoker
+\item Receiver
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда хотите:
+\begin{itemize}
+\item параметризовать объекты выполняемым действием, как в случае с пунктами меню \textbf{MenuItem}. В процедурном языке такую параметризацию можно выразить с помощью функции обратного вызова, то есть такой функции, которая регистрируется, чтобы быть вызванной позднее. Команды представляют собой объектно-ориентированную альтернативу функциям обратного вызова;
+\item определять, ставить в очередь и выполнять запросы в разное время. Время жизни объекта \textbf{Command} необязательно должно зависеть от времени жизни исходного запроса. Если получателя запроса удается реализовать так, чтобы он не зависел от адресного пространства, то объект-команду можно передать другому процессу, который займется его выполнением;
+\item поддержать отмену операций. Операция \textbf{Execute} объекта \textbf{Command} может сохранить состояние, необходимиое для отката действий, выполненных командой. В этом случае в интерфейсе класса \textbf{Command} должна быть дополнительная операция \textbf{Unexecute}, которая отменяет действия, выполненные предшествующим обращением к \textbf{Execute}. Выполненные команды хранятся в списке истории. Для реализации произвольного числа уровней отмены и повтора команд нужно обходить этот список соответственно в обратном и прямом направлениях, вызывая при посещении каждного элемента команду \textbf{Unexecute} или \textbf{Execute};
+\item поддержать протоколирование изменений, чтобы их можно было выполнить повторно после аварийной остановки системы. Дополнив интерфейс класса \textbf{Command} операциями сохранения и загрузки, вы сможете вести протокол изменений во внешней памяти. Для восстановления после сбоя нужно будет загрузить сохраненные команды с диска и повторно выполнить их с помощью операции \textbf{Execute};
+\item структурировать систему на основе высокоуровневых операций, построеных из примитивных. Такая структура типична для информационных систем, поддерживающих транзакции. Транзакция инкапсулирует набор изменений данных. Паттерн Command позволяте моделировать транзакции. У всех команд есть общий интрефейс, что дает возможность работать одинаково с любыми транзакциями. С помощью этого паттерна можно легко добавлять в систему новые виды транзакций.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item клиент создает объект ConcreteCommand и устанавливает для него получателя;
+\item инициатор Invoker сохраняет объект ConcreteCommand;
+\item инициатор отправляет запрос, вызывая операцию команды Execute. Если поддерживается отмена выполненных действий, то ConcreteCommand перед вызовом Execute сохраняет информацию о состоянии, достаточную для выполнения отката;
+\item объект ConcreteCommand вызывает операции получателя для выполнения запроса.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] команда разрывает связь между объектом, инициирующим операцию, и объектом, имеющим информацию о том, как ее выполнить
+\item [+] команды – это самые настоящие объекты
+\item [+] из простых команд можно собирать составные
+\item [+] добавлять новые команды легко
+
+\end{itemize}
+
+\newpage
+\subsection{Interpreter}
+
+\large\textbf{Interpreter} --- паттерн поведения классов.
+\\
+\large\textbf{Назначение}: Для заданного языка определяет представление его грамматики, а также интерпретатор предложений этого языка.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[text width=\ssboxSize]{Client}{-5, -2}
+	\end{class}
+	\begin{class}[text width=\ssboxSize]{Context} {2, 0}
+	\end{class}
+	\begin{interface}[text width=\boxSize]{AbstractExpression}{3, -5}
+		\operation{interpret(c: Context)}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{TerminalExpression}{-2, -8}
+		\implement{AbstractExpression}
+		\operation{interpret(c: Context)}
+	\end{class}
+	\begin{class}[text width=\boxSize]{NonterminalExpression}{8, -8}
+		\implement{AbstractExpression}
+		\operation{interpret(c: Context)}
+	\end{class}
+	\unidirectionalAssociation{Client.east}{}{}{Context.west}
+	\unidirectionalAssociation{Client.east}{}{}{AbstractExpression.west}
+	\aggregation{NonterminalExpression.east}{}{}{AbstractExpression.east}
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item AbstractExpression ---
+\item TerminalExpression ---
+\item NonterminalExpression ---
+\item Context ---
+\item Client ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item используйте паттерн \textbf{Interpreter}, когда есть язык для интерпретации, предложения которого можно представить в виде абстрактных синтаксических деревьев;
+\item грамматика проста. Для сложных гамматик иерархия классов становится слишком громоздкой и неуправляемой. В таких случаях лучше применять генераторы синтаксических анализаторов, поскольку они могут интерпретировать выражения, не строя абстрактных синтаксических деревьев, что экономит память, а возможно, и время;
+\item эффективность не является главным критерием. Наиболее эфективные интерпретаторы обычно не работают непосредственно с деревьями, а сначала транслируют их в другую форму. Так, регулярное выражение часто преобразуют в конечный автомат. Но даже в этом случае сам транслятор можно реализовать с помощью паттерна \textbf{Interpreter}.
+\end{itemize}
+
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item клиент строит (или получает в готовом виде) предложение в виде абстрактного синтаксического дерева, в узлах которого находятся объекты классов NonterminalExpression и TerminalExpression. Затем клиент инициализирует контекст и вызывает операцию Interpret;
+\item в каждом узле вида NonterminalExpression через операции Interpret определяется операция Interpret для каждого подвыражения. Для класса TerminalExpression операция Interpret определяет базу рекурсии;
+\item операции Interpret в каждом узле используют контекст для сохранения и доступа к состоянию интерпретатора.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] грамматику легко изменять и расширять;
+\item [+] простая реализация грамматики;
+\item [-] сложные грамматики трудно сопровождать;
+\item [+] добавление новых способов интерпретации выражений.
+\end{itemize}
+
+\newpage
+\subsection{Iterator}
+
+\large\textbf{Iterator} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Предоставляет способ последовательного доступа ко всем элементам составного объекта, не раскрывая его внутреннего представления.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{object}[text width=\sboxSize]{Client}{0,0}
+	\end{object}
+	\begin{abstractclass}[text width=\boxSize] {Aggregate} {-10, 0}
+		\operation{+ cretateIterator()}
+	\end{abstractclass}
+	\begin{abstractclass}[text width=\boxSize] {Iterator} {10, 0}
+		\operation{+ first()}
+		\operation{+ next()}
+		\operation{+ isDone()}
+		\operation{+ currentItem()}
+	\end{abstractclass}	
+	\begin{class}[text width=\boxSize] {ConcreteAggregate} {-10, -5}
+		\inherit{Aggregate}
+		\operation{+ createIterator()}
+	\end{class}
+	\begin{class}[text width=\boxSize] {ConcreteIterator} {10, -5}
+		\inherit{Iterator}
+	\end{class}
+	\unidirectionalAssociation{Client}{}{}{Aggregate}
+	\unidirectionalAssociation{Client}{}{}{Iterator}
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Iterator ---
+\item ConcreteIterator ---
+\item Aggregate ---
+\item ConcreteAggregate ---
+\end{itemize}
+
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item для доступа к содержимому агрегированных объектов без раскрытия их внутреннего представления;
+\item для поддержки нескольких активных обходов одного и того же агрегированного объекта;
+\item для предостваления единообразного интерфейса с целью обхода различных агрегированных структур(то есть для поддержки полморфной итерации).
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item ConcreteIterator отслеживает текущий объект в агрегате и может вычислить идущий за ним.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] поддерживает различные виды обхода агрегата
+\item [+] итераторы упрощают интерфейс класса Aggregate
+\item [+] одновременно для данного агрегата может быть активно несколько обходов
+\end{itemize}
+
+
+\newpage
+\subsection{Mediator}
+
+\large\textbf{Mediator} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Определяет объект, инкапсулирующий способ взаимодействия множества
+объектов. Посредник обеспечивает слабую связанность системы, избавляя объекты от необходимости явно ссылаться друг на друга и позволяя тем самым независимо изменять взаимодействия между ними. 
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{abstractclass}[text width=\boxSize]{Mediator}{-5, 0}
+		\operation{+ method()}
+	\end{abstractclass}
+	\begin{class}[text width=\boxSize]{ConcreteMediator}{-5, -5}
+		\inherit{Mediator}
+		\operation{+ method()}
+	\end{class}
+	
+	\begin{abstractclass}[text width=\boxSize]{Collegague}{10, 0}
+		\operation{+ handleEvent()}
+	\end{abstractclass}
+	\begin{class}[text width=\boxSize]{ConcreteCollegagueA} {5, -5}
+		\inherit{Collegague}
+		\operation{+ handleEvent()}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ConcreteCollegagueB} {15, -5}
+		\inherit{Collegague}
+		\operation{+ handleEvent()}
+	\end{class}
+	
+	\unidirectionalAssociation{Collegague}{}{}{Mediator}
+	\unidirectionalAssociation{ConcreteMediator}{}{}{ConcreteCollegagueA}
+
+	\unidirectionalAssociation{ConcreteMediator.south}{}{}{ConcreteCollegagueB.south};
+%	\usetikzlibrary{calc}
+%    \draw [-{Latex[length=5mm, width=2mm]}, color=\umldrawcolor] (ConcreteMediator.south) -- ++(0, -2) -- %($(ConcreteCollegagueB.south) - (0, 2)$) -- (ConcreteCollegagueB.south) {};
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Mediator ---
+\item ConcreteMediator --- 
+\item Colleagues ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item имеются объекты, связи между которыми сложны и четко определены. Получающиеся при этом взаимозависимости не структурированы и трудны для понимания;
+\item нельзя повторно использовать объект, поскольку он обменивается информацией со многими другими объектами;
+\item поведение, распределенное между несколькими классами, должно поддаваться настройке без порождения множества подклассов.
+\end{itemize}
+
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item Коллеги посылают запросы посреднику и получают запросы от него. Посредник реализует кооперативное поведение путем переадресации каждого запроса подходящему коллеге (или нескольким коллегам).
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] снижает число порождаемых подклассов;
+\item [+] устраняет связанность между коллегами;
+\item [+] упрощает протоколы взаимодействия объектов;
+\item [+] абстрагирует способ кооперирования объектов;
+\item [+] централизует управление.
+\end{itemize}
+
+
+\newpage
+\subsection{Memento}
+
+\large\textbf{Memento} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Не нарушая инкапсуляции, фиксирует и выносит за пределы объекта его внутреннее состояние так, чтобы позднее можно было восстановить в нем объект.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[text width=\boxSize]{Originator} {-10, 0}
+		\operation{+ setMemento(m: Memento)}
+		\operation{+ createMemento()}
+		\attribute{- state}
+	\end{class}
+	\begin{class}[text width=\boxSize]{Memento} {0, 0}
+		\operation{+ getState()}
+		\operation{+ setState()}
+		\attribute{- state}
+	\end{class}
+	\begin{object}[text width=\boxSize]{Caretaker} {10, 0}
+	\end{object}
+	\aggregation{Caretaker.west}{}{}{Memento.east}
+	\umlnoteND {-10.9, -4}{5.2cm}{ return new Memento(state) }{north}{1.5, 0}{0, 2};
+	\umlnoteND {-5, -4}{\sboxSize}{ state = m.getState() }{north}{-2.4, 0}{0, 2.5};
+
+	\draw [umlcd style dashed line, ->] (Originator.east) -- (Memento.west);
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Memento ---
+\item Originator ---
+\item Caretaker ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item необходимо сохранить мгновенный снимок состояния объекта(или его части), чтобы впоследствии объект можно было восстановить в том же состоянии;
+\item прямое получение этого состояния раскрывает детали реализации и нарушает инкапсуляцию объекта.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item посыльный запрашивает хранитель у хозяина, некоторое время держит его у себя, а затем возвращает хозяину, как видно на представленной диаграмме взаимодействий.
+\item хранители пассивны. Только хозяин, создавший хранитель, имеет доступ к информации о состоянии.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] сохранение границ инкапсуляции;
+\item [+] упрощение структуры хозяина;
+\item [-] значительные издержки при использовании хранителей;
+\item [-] определение «узкого» и «широкого» интерфейсов;
+\item [-] скрытая плата за содержание хранителя.
+\end{itemize}
+
+
+\newpage
+\subsection{Observer}
+
+\large\textbf{Observer} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Определяет зависимость типа «один ко многим» между объектами таким образом, что при изменении состояния одного объекта все зависящие от него оповещаются об этом и автоматически обновляются.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{interface}[text width=\boxSize]{Observable}{-5, 0}
+		\operation{+ addObserver(o: Observer)}
+		\operation{+ removeObserver(o: Observer)}
+		\operation{+ notifyObserver()}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{ConcreteObservable}{-5, -5}
+		\implement{Observable}
+		\attribute{- observers: Observer[]}
+		\operation{+ addObserver(o: Observer)}
+		\operation{+ removeObserver(o: Observer)}
+		\operation{+ notifyObserver()}
+	\end{class}
+	
+	\begin{interface}[text width=\boxSize]{Observer}{5, -5.5}
+		\operation{+ handleEvent()}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{ConcreteObserver} {5, -10}
+		\implement{Observer}
+		\operation{+ handleEvent()}
+	\end{class}
+	\aggregation{ConcreteObservable}{0..*}{}{Observer}
+	\umlnoteND {-5, -9.7}{\boxSize}{ call method handleEvent() for every Observer }{north}{0.5, 0}{0, 2};
+
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Subject ---
+\item Observer ---
+\item ConcreteSubject ---
+\item ConcreteObserver ---
+\end{itemize}
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item когда у абстракции есть два аспекта, один из которых зависит от другого. Инкапсуляции этих аспектов в разные объекты позоляют изменять и повторно ипользовать их независимо;
+\item когда при модификации одного объекта требуется изменить другие и вы не знаете, сколько именно объектов нужно изменить;
+\item когда один объект должен оповещать других, не делая предположений об уведомляемых объектах. Другими словами, вы не хотите, чтобы объекты были тесно связаны между собой.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item объект ConcreteSubject уведомляет своих наблюдателей о любом изменении, которое могло бы привести к рассогласованности состояний наблюдателя и субъекта;
+\item после получения от конкретного субъекта уведомления об изменении объект ConcreteObserver может запросить у субъекта дополнительнуюинформацию, которую использует для того, чтобы оказаться в состоянии, согласованном с состоянием субъекта.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] абстрактная связанность субъекта и наблюдателя;
+\item [+] поддержка широковещательных коммуникаций;
+\item [-] неожиданные обновления.
+\end{itemize}
+
+\newpage
+\subsection{State}
+
+\large\textbf{State} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: озволяет объекту варьировать свое поведение в зависимости от внутреннего состояния. Извне создается впечатление, что изменился класс объекта.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[text width=\boxSize]{Context} {-10, 0}
+		\operation{+ request()}
+	\end{class}
+	\begin{abstractclass}[text width=\boxSize]{State}{3, 0}
+		\operation{+ handle()}
+	\end{abstractclass}
+	\begin{class}[text width=\boxSize]{ConcreteStateA}{-2, -5}
+		\inherit{State}
+		\operation{+ handle()}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ConcreteStateB}{7, -5}
+		\inherit{State}
+		\operation{+ handle()}
+	\end{class}
+	\aggregation{Context}{state}{}{State}
+	\umlnoteND {-11, -3}{\sboxSize}{state.handle() }{north}{0, 0}{0, 2};
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Context --- 
+\item State ---
+\item ConcreteState subclasses ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item когда поведение объекта зависит от его состояния и должно изменяться вовремя выполнения;
+\item когда в коде операций встречаются состоящие из многих ветвей условные операторы, в которых выбор ветви зависит от состояния. Обычно в таком случае состояние представлено перечисляемыми константами. Часто одна и та же структура условного оператора повторяется в нескольких операциях. Паттерн \textbf{State} предлагает поместить каждую ветвь в отдельный класс. Это позволяет трактовать состояние объекта как самостоятельный объект, который может изменяться независимо от других.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item ласс Context делегирует зависящие от состояния запросы текущему объекту ConcreteState;
+\item онтекст может передать себя в качестве аргумента объекту State, который будет обрабатывать запрос. Это дает возможность объекту состоянию при необходимости получить доступ к контексту;
+\item Context – это основной интерфейс для клиентов. Клиенты могут конфигурировать контекст объектами состояния State. Один раз сконфигурировав контекст, клиенты уже не должны напрямую связываться с объектами состояния;
+\item либо Context, либо подклассы ConcreteState могут решить, при каких условиях и в каком порядке происходит смена состояний.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] локализует зависящее от состояния поведение и делит его на части, соответствующие состояниям;
+\item [+] делает явными переходы между состояниями;
+\item [+] объекты состояния можно разделять.
+\end{itemize}
+
+\newpage
+\subsection{Strategy}
+
+\large\textbf{Strategy} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Определяет семейство алгоритмов, инкапсулирует каждый из них и делает их взаимозаменяемыми. Стратегия позволяет изменять алгоритмы независимо от клиентов, которые ими пользуются.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[text width=\boxSize]{Context}{-10, 0}
+		\operation{+ contextInterface()}
+	\end{class}
+	\begin{abstractclass}[text width=\boxSize]{Strategy}{3, 0}
+		\operation{+ algorithmInterface()}
+	\end{abstractclass}
+	\begin{class}[text width=\boxSize]{ConcreteStrategyA}{-6,-5}
+		\inherit{Strategy}
+		\operation{+ algorithmInterface()}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ConcreteStrategyB}{2,-5}
+		\inherit{Strategy}
+		\operation{+ algorithmInterface()}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ConcreteStrategyC}{10,-5}
+		\inherit{Strategy}
+		\operation{+ algorithmInterface()}
+	\end{class}
+	\aggregation{Context}{strategy}{}{Strategy}
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Strategy ---
+\item ConcreteStrategy ---
+\item Context ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item имеется много родственных классов, отличающихся только поведением. \textbf{Strategy} позволяет сконфигурировать класс, задав одно из возможных поведений;
+\item вам нужно иметь несколько разных вариантов алгоритма. Например, можно определить два варианта алгоритма, один из которых требует больше времени, а другой --- больше памяти. \textbf{Strategy} разрешается применять, когда варианты алгоритмов реализованы в виде иерархии классов;
+\item в алгоритме содержатся данные, о которых клиент не должен «знать». Используйте паттерн \textbf{Strategy}, чтобы не раскрывать сложные, специфичные для алгоритма структуры данных;
+\item в классе определено много поведений, что предствалено развлетвленными условными операторвами. В этом случае проще перенести код из ветви в отдельные классы стратегий.
+\end{itemize}
+
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item классы Strategy и Context взаимодействуют для реализации выбранного алгоритма. Контекст может передать стратегии все необходимые алгоритму данные в момент его вызова. Вместо этого контекст может позволить обращаться к своим операциям в нужные моменты, передав ссылку на самого себя операциям класса Strategy;
+\item контекст переадресует запросы своих клиентов объекту стратегии. Обычно клиент создает объект ConcreteStrategy и передает его контексту, после чего клиент «общается» исключительно с контекстом. Часто в распоряжении клиента находится несколько классов ConcreteStrategy, которые он может выбирать.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] семейства родственных алгоритмов
+\item [~] альтернатива порождению подклассов.
+\item [+] с помощью стратегий можно избавиться от условных операторов
+\item [+] выбор реализации
+\item [-] клиенты должны «знать» о различных стратегиях.
+\item [~] обмен информацией между стратегией и контекстом
+\item [-] увеличение числа объектов
+\end{itemize}
+
+\newpage
+\subsection{Template method}
+
+\large\textbf{Template method} --- паттерн поведения классов.
+\\
+\large\textbf{Назначение}: Шаблонный метод определяет основу алгоритма и позволяет подклассам переопределить некоторые шаги алгоритма, не изменяя его структуру в целом.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{abstractclass}[text width=\boxSize]{AbstractClass}{0,0}
+		\operation{+ templateMethod()}
+		\operation[0]{\# primitiveOperationA()}
+		\operation[0]{\# primitiveOperationB()}
+	\end{abstractclass}
+	\begin{class}[text width=\boxSize]{ConcreteClass}{0, -5}
+		\inherit{AbstractClass}
+		\operation{\# primitiveOperationA()}
+		\operation{\# primitiveOperationB()}
+	\end{class}
+	\umlnoteND {8, 0}{\sboxSize}{
+		\vskip 1pt \setlength{\parindent}{5pt} ...\\
+		primitiveOperationA()\\  ...\\
+		primitiveOperationB()\\ ...\\
+	}{west}{0, 0}{-2, 0};
+	
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item AbstractClass ---
+\item ConcreteClass ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}:
+\begin{itemize}
+\item чтобы однократно использовать инвариантные части алгоритма, оставляя реализацию изменяющегося поведения на усмотрение подклассов;
+\item когда нужно вычленить и локализовать в одном классе поведение, общее для всех подклассов, дабы избежать дублирования кода. Это хороший пример техники «вынесения за скобки с целью обобщения», описанной в работе Уильяма Опдайка и Ральфа Джонсона. Сначала индентифицируются различия в существующем коде, а затем они выносятся в отдельные операции. В конечном итоге различающиеся фрагменты кода заменяются шаблонным методом, из которого вызываются новые операции;
+\item для управления расширениями подклассов. Можно определить шаблонный метод так, что он будет вызывать операции-зацепки(hooks) --- в определенных точках, разрешив тем самым расширение только в этих точках.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item ConcreteClass предполагает, что инвариантные шаги алгоритма будут выполнены в AbstractClass.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item SHIIIT BOISHHSH
+\end{itemize}
+
+\newpage
+\subsection{Visitor}
+
+\large\textbf{Visitor} --- паттерн поведения объектов.
+\\
+\large\textbf{Назначение}: Описывает операцию, выполняемую с каждым объектом из некоторой структуры. Паттерн посетитель позволяет определить новую операцию, не изменяя классы этих объектов.
+\\
+
+\begin{tikzpicture}% [ show background grid ]
+	\begin{class}[text width=\sboxSize]{Client}{-10, 0}
+	\end{class}
+	\begin{interface}[text width=\bboxSize]{Visitor}{3, 0}
+		\operation{+ visitConcreteOperationA(c: ConcreteElementA)}
+		\operation{+ visitConcreteOperationB(c: ConcreteElementB)}
+	\end{interface}
+	\begin{class}[text width=\bboxSize]{ConcreteVisitorA}{-3,-5}
+		\implement{Visitor}
+		\operation{+ visitConcreteOperationA(c: ConcreteElementA)}
+		\operation{+ visitConcreteOperationB(c: ConcreteElementB)}		
+	\end{class}
+	\begin{class}[text width=\bboxSize]{ConcreteVisitorB}{10,-5}
+		\implement{Visitor}
+		\operation{+ visitConcreteOperationA(c: ConcreteElementA)}
+		\operation{+ visitConcreteOperationB(c: ConcreteElementB)}
+	\end{class}
+	\begin{class}[text width=\boxSize]{ObjectStructure}{-5, -9}
+	\end{class}
+	
+	\begin{interface}[text width=\boxSize]{Element}{5, -8}
+		\operation{+ accept(v: Visitor)}
+	\end{interface}
+	\begin{class}[text width=\boxSize]{ConcreteElementA}{0, -11}
+		\implement{Element}
+		\operation{+ accept(v: Visitor)}
+		\operation{+ operationA()}
+	\end{class}
+	
+	\begin{class}[text width=\boxSize]{ConcreteElementB}{10, -11}
+		\implement{Element}
+		\operation{+ accept(v: Visitor)}
+		\operation{+ operationB()}
+	\end{class}
+	\unidirectionalAssociation{Client.east}{}{}{Visitor.west}
+	\unidirectionalAssociation{ObjectStructure.east}{}{}{Element.west}
+	\unidirectionalAssociation{Client.south}{}{}{ObjectStructure.west}
+
+	\umlnoteND {0, -14}{\boxSize}{\tab v.visitConcreteElementA(this)}{north}{0.5, 0}{0, 2.1};
+	\umlnoteND {10, -14}{\boxSize}{\tab v.visitConcreteElementB(this)}{north}{0.5, 0}{0, 2.1};
+
+	
+	
+\end{tikzpicture}
+\\\\
+\textbf{Описание структуры}:
+\begin{itemize}
+\item Visitor ---
+\item ConcreteVisitor ---
+\item Element ---
+\item ConcreteElement ---
+\item ObjectStructure ---
+\end{itemize}
+
+\large\textbf{\\Варианты использования}, когда:
+\begin{itemize}
+\item в структуре присутствуют объекты многих классов с различными интерфейсами и вы хотите выполнять над ними операции, зависящие от конкретных классов;
+\item над объектами, входящими в состав структуры, надо выполнять разнообразные, не связанные между собой операции и вы не хотите «засорять» классы такими операциями; \textbf{Visitor} позволяет объединить родственные операции, поместив их в один класс. Если структура объектов является общей для нескольких приложений, то паттерн \textbf{Visitor} позволит в каждое приложение включить только относящиеся к нему операции;
+\item классы, устанавливающие структуру объектов, изменяются редко, но новые операции над этой структурой добавляются часто. При изменении классов, представленных в структуре, нужно будет переопределить интерфейсы всех посетителей, а это может вызвать затруднения. Поэтому если классы меняются достаточно часто, то, вероятно, лучше определить операции прямо в них.
+\end{itemize}
+
+\textbf{\\Отношения}
+\begin{itemize}
+\item клиент, использующий паттерн посетитель, должен создать объект класса ConcreteVisitor, а затем обойти всю структуру, посетив каждый ее элемент.
+\item при посещении элемента последний вызывает операцию посетителя, соответствующую своему классу. Элемент передает этой операции себя в качестве аргумента, чтобы посетитель мог при необходимости получить доступ к его состоянию.
+\end{itemize}
+
+\textbf{\\Плюсы/Минусы}
+\begin{itemize}
+\item [+] упрощает добавление новых операций
+\item [+] объединяет родственные операции и отсекает те, которые не имеют к ним отношения
+\item [-] добавление новых классов ConcreteElement затруднено
+\item [+] посещение различных иерархий классов
+\item [+] аккумулирование состояния
+\item [-] нарушение инкапсуляции
+\end{itemize}
+
+\end{document}
+
